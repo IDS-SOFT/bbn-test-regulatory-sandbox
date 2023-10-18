@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /******************************************************************************************* */
 /* This is a comprehensive smart contract template which handles :
@@ -11,8 +10,9 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 3. Automatic compliance checks
 */
 
-contract RegulatorySandbox is Ownable {
-    using SafeMath for uint256;
+contract RegulatorySandbox {
+    using Math for uint256;
+    address owner;
 
     string public sandboxName;
     address public regulator;
@@ -24,11 +24,12 @@ contract RegulatorySandbox is Ownable {
     event RegTechSolutionApproved(address indexed solutionAddress);
     event RegTechSolutionRevoked(address indexed solutionAddress);
     event SandboxClosed();
-    event CheckBalance(string text, uint amount);
+    event CheckBalance(uint amount);
 
     constructor(string memory _sandboxName, address _regulator) {
         sandboxName = _sandboxName;
         regulator = _regulator;
+        owner = msg.sender;
     }
 
     // Approve a RegTech solution for testing within the sandbox
@@ -71,16 +72,18 @@ contract RegulatorySandbox is Ownable {
     }
     
     function getBalance(address user_account) external returns (uint){
-    
-       string memory data = "User Balance is : ";
        uint user_bal = user_account.balance;
-       emit CheckBalance(data, user_bal );
+       emit CheckBalance(user_bal);
        return (user_bal);
-
     }
 
     modifier onlyRegulator() {
         require(msg.sender == regulator, "Only the regulator can perform this action");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
         _;
     }
 }
